@@ -1,40 +1,272 @@
-name: hashicorp/null
+name: nuodb/nuodbaas
 resources:
-    null_resource:
+    nuodbaas_backup:
         subCategory: ""
-        description: The null_resource resource implements the standard resource lifecycle but takes no further action. On Terraform 1.4 and later, use the terraform_data resource type https://developer.hashicorp.com/terraform/language/resources/terraform-data instead. The triggers argument allows specifying an arbitrary set of values that, when changed, will cause the resource to be replaced.
-        name: null_resource
-        title: null_resource Resource - terraform-provider-null
+        description: Resource for managing NuoDB backups created using the DBaaS Control Plane
+        name: nuodbaas_backup
+        title: nuodbaas_backup Resource - nuodbaas
         examples:
-            - name: cluster
+            - name: backup
               manifest: |-
                 {
-                  "connection": [
-                    {
-                      "host": "${element(aws_instance.cluster[*].public_ip, 0)}"
-                    }
-                  ],
-                  "provisioner": {
-                    "remote-exec": [
-                      {
-                        "inline": [
-                          "bootstrap-cluster.sh ${join(\" \",\n      aws_instance.cluster[*].private_ip)}"
-                        ]
-                      }
-                    ]
+                  "database": "${nuodbaas_database.db.name}",
+                  "import_source": {
+                    "backup_handle": "backup",
+                    "backup_plugin": "embedded.cp.nuodb.com"
                   },
-                  "triggers": {
-                    "cluster_instance_ids": "${join(\",\", aws_instance.cluster[*].id)}"
+                  "labels": {
+                    "latest": "true",
+                    "purpose": "test"
+                  },
+                  "name": "backup",
+                  "organization": "${nuodbaas_database.db.organization}",
+                  "project": "${nuodbaas_database.db.project}"
+                }
+              references:
+                database: nuodbaas_database.db.name
+                organization: nuodbaas_database.db.organization
+                project: nuodbaas_database.db.project
+        argumentDocs:
+            Deleting: '- The backup has been marked for deletion, which is in progress'
+            Failed: '- The backup failed and is unusable'
+            Pending: '- The backup is pending completion'
+            Succeeded: '- The backup completed successfully and is available for use'
+            backup_handle: (String) The existing backup handle to import
+            backup_plugin: (String) The plugin used to create the backup to import
+            created_by_policy: (String) The fully-qualified name of the backup policy that the backup was created by
+            creation_time: (String) The time that the backup was taken
+            database: (String) The database that the backup belongs to
+            import_source: (Attributes) (see below for nested schema)
+            labels: (Map of String) User-defined labels attached to the resource that can be used for filtering
+            message: (String) Message summarizing the state of the backup
+            name: (String) The name of the backup
+            organization: (String) The organization that the backup belongs to
+            project: (String) The project that the backup belongs to
+            ready_to_use: (Boolean) Whether the backup is ready to be used to restore a database
+            state: '(String) The state of the backup:'
+            status: (Attributes) (see below for nested schema)
+        importStatements:
+            - |-
+              # An existing backup can be imported by specifying the organization,
+              # project name, database name, and backup name separated by "/"
+              terraform import nuodbaas_backup.backup org/proj/db/backup
+    nuodbaas_backuppolicy:
+        subCategory: ""
+        description: Resource for managing NuoDB backup policies created using the DBaaS Control Plane
+        name: nuodbaas_backuppolicy
+        title: nuodbaas_backuppolicy Resource - nuodbaas
+        examples:
+            - name: basic
+              manifest: |-
+                {
+                  "frequency": "@weekly",
+                  "name": "basic",
+                  "organization": "org",
+                  "selector": {
+                    "scope": "org"
                   }
                 }
-              dependencies:
-                aws_instance.cluster: |-
-                    {
-                      "ami": "ami-0dcc1e21636832c5d",
-                      "count": 3,
-                      "instance_type": "m5.large"
-                    }
+            - name: pol
+              manifest: |-
+                {
+                  "frequency": "@daily",
+                  "labels": {
+                    "provisioned-by": "terraform"
+                  },
+                  "name": "pol",
+                  "organization": "org",
+                  "properties": {
+                    "propagate_database_labels": true,
+                    "propagate_policy_labels": true
+                  },
+                  "retention": {
+                    "daily": 7,
+                    "hourly": 24,
+                    "monthly": 12,
+                    "weekly": 4,
+                    "yearly": 3
+                  },
+                  "selector": {
+                    "labels": {
+                      "rpo": "1d"
+                    },
+                    "scope": "org",
+                    "slas": [
+                      "qa",
+                      "prod"
+                    ],
+                    "tiers": [
+                      "n0.small",
+                      "n1.small"
+                    ]
+                  },
+                  "suspended": false
+                }
         argumentDocs:
-            id: (String) This is set to a random value at create time.
-            triggers: (Map of String) A map of arbitrary strings that, when changed, will force the null resource to be replaced, re-running any associated provisioners.
-        importStatements: []
+            daily: (Number) The number of daily backups to retain
+            frequency: (String) The frequency to schedule backups at, in cron format
+            hourly: (Number) The number of hourly backups to retain
+            labels: (Map of String) User-defined labels attached to the resource that can be used for filtering
+            last_missed_schedule_time: (String) The time that backups were last missed by this policy
+            last_schedule_time: (String) The time that backups were last taken by this policy
+            monthly: (Number) The number of monthly backups to retain
+            name: (String) The name of the backup policy
+            next_schedule_time: (String) The time that backups are next scheduled by this policy
+            organization: (String) The organization that the backup policy belongs to
+            propagate_database_labels: (Boolean) Whether to propagate the user-defined labels from the matching database to backup resources created by this policy
+            propagate_policy_labels: (Boolean) Whether to propagate the user-defined labels from the backup policy to backup resources created by this policy
+            properties: (Attributes) (see below for nested schema)
+            retention: (Attributes) (see below for nested schema)
+            scope: (String) The scope that the backup policy applies to
+            selector: (Attributes) (see below for nested schema)
+            slas: (List of String) The SLAs to filter databases on
+            status: (Attributes) (see below for nested schema)
+            suspended: (Boolean) Whether backups from the policy are suspended
+            tiers: (List of String) The tiers to filter databases on
+            weekly: (Number) The number of weekly backups to retain
+            yearly: (Number) The number of yearly backups to retain
+        importStatements:
+            - |-
+              # An existing backup policy can be imported by specifying the organization
+              # and policy name, separated by "/"
+              terraform import nuodbaas_backuppolicy.pol org/pol
+    nuodbaas_database:
+        subCategory: ""
+        description: Resource for managing NuoDB databases created using the DBaaS Control Plane
+        name: nuodbaas_database
+        title: nuodbaas_database Resource - nuodbaas
+        examples:
+            - name: basic
+              manifest: |-
+                {
+                  "dba_password": "secret",
+                  "name": "basic",
+                  "organization": "${nuodbaas_project.proj.organization}",
+                  "project": "${nuodbaas_project.proj.name}"
+                }
+              references:
+                organization: nuodbaas_project.proj.organization
+                project: nuodbaas_project.proj.name
+            - name: db
+              manifest: |-
+                {
+                  "dba_password": "secret",
+                  "labels": {
+                    "color": "green",
+                    "flavor": "bold"
+                  },
+                  "name": "db",
+                  "organization": "${nuodbaas_project.proj.organization}",
+                  "project": "${nuodbaas_project.proj.name}",
+                  "properties": {
+                    "archive_disk_size": "10Gi",
+                    "tier_parameters": {
+                      "capacityType": "spot",
+                      "zones": "${jsonencode([\"us-east-2a\", \"us-east-2c\"])}"
+                    }
+                  },
+                  "tier": "n0.nano"
+                }
+              references:
+                organization: nuodbaas_project.proj.organization
+                project: nuodbaas_project.proj.name
+        argumentDocs:
+            Available: '- The database is ready to accept SQL connections'
+            Creating: '- The database is being created and not yet available'
+            Deleting: '- The database has been marked for deletion, which is in progress'
+            Expired: '- The database has expired'
+            Failed: '- The database has failed to achieve a usable state'
+            Modifying: '- The database is being modified'
+            Restoring: '- Restore from backup is in progress for this database'
+            Stopped: '- The database has been stopped'
+            Stopping: '- Shutdown is in progress for this database'
+            archive_disk_size: (String) The size of the archive volumes for the database. Can be only updated to increase the volume size.
+            backup: (String) The name of the backup to restore the database from. If a fully-qualified name is not supplied, then the organization, project, or name of the database being created is assumed.
+            ca_pem: (String) The PEM-encoded certificate for SQL clients to verify database servers
+            dba_password: (String, Sensitive) The password for the DBA user
+            is_disabled: (Boolean) Whether the project or database should be shutdown
+            journal_disk_size: (String) The size of the journal volumes for the database. Can be only updated to increase the volume size.
+            labels: (Map of String) User-defined labels attached to the resource that can be used for filtering
+            maintenance: (Attributes) (see below for nested schema)
+            message: (String) Message summarizing the state of the database
+            name: (String) The name of the database
+            organization: (String) The organization that the database belongs to
+            product_version: (String) The version/tag of the NuoDB image to use. For available tags, see https://hub.docker.com/r/nuodb/nuodb-ce/tags. If omitted, the database version will be inherited from the project.
+            project: (String) The project that the database belongs to
+            properties: (Attributes) (see below for nested schema)
+            ready: (Boolean) Whether the database is ready
+            restore_from: (Attributes) (see below for nested schema)
+            shutdown: (Boolean) Whether the database has shutdown
+            sql_endpoint: (String) The endpoint for SQL clients to connect to
+            state: '(String) The state of the database:'
+            status: (Attributes) (see below for nested schema)
+            tier: (String) The service tier for the database. If omitted, the project service tier is inherited.
+            tier_parameters: (Map of String) Opaque parameters supplied to database service tier.
+        importStatements:
+            - |-
+              # An existing database can be imported by specifying the organization,
+              # project name, and database name, separated by "/"
+              terraform import nuodbaas_database.db org/proj/db
+    nuodbaas_project:
+        subCategory: ""
+        description: Resource for managing NuoDB projects created using the DBaaS Control Plane
+        name: nuodbaas_project
+        title: nuodbaas_project Resource - nuodbaas
+        examples:
+            - name: basic
+              manifest: |-
+                {
+                  "name": "basic",
+                  "organization": "org",
+                  "sla": "dev",
+                  "tier": "n0.nano"
+                }
+            - name: proj
+              manifest: |-
+                {
+                  "labels": {
+                    "color": "blue",
+                    "flavor": "mild"
+                  },
+                  "name": "proj",
+                  "organization": "org",
+                  "properties": {
+                    "product_version": "5.1",
+                    "tier_parameters": {
+                      "group": "dev",
+                      "zone": "us-east"
+                    }
+                  },
+                  "sla": "prod",
+                  "tier": "n0.nano"
+                }
+        argumentDocs:
+            Available: '- The project is available'
+            Creating: '- The project is being created and not yet available'
+            Deleting: '- The project has been marked for deletion, which is in progress'
+            Expired: '- The project and its databases have expired'
+            Failed: '- The project has failed to achieve a usable state'
+            Modifying: '- The project is being modified'
+            Stopped: '- The project and its databases have been stopped'
+            Stopping: '- Shutdown is in progress for this project'
+            ca_pem: (String) The PEM-encoded certificate for SQL clients to verify database servers within the project
+            is_disabled: (Boolean) Whether the project or database should be shutdown
+            labels: (Map of String) User-defined labels attached to the resource that can be used for filtering
+            maintenance: (Attributes) (see below for nested schema)
+            message: (String) Message summarizing the state of the project
+            name: (String) The name of the project
+            organization: (String) The organization that the project belongs to
+            product_version: (String) The version/tag of the NuoDB image to use. For available tags, see https://hub.docker.com/r/nuodb/nuodb-ce/tags. If omitted, the project version will be resolved based on the SLA and cluster configuration.
+            properties: (Attributes) (see below for nested schema)
+            ready: (Boolean) Whether the project is ready
+            shutdown: (Boolean) Whether the project and all of its databases have shutdown
+            sla: (String) The SLA for the project. Cannot be updated once the project is created.
+            state: '(String) The state of the project:'
+            status: (Attributes) (see below for nested schema)
+            tier: (String) The service tier for the project
+            tier_parameters: (Map of String) Opaque parameters supplied to project service tier.
+        importStatements:
+            - |-
+              # An existing project can be imported by specifying the organization
+              # and project name, separated by "/"
+              terraform import nuodbaas_project.proj org/proj

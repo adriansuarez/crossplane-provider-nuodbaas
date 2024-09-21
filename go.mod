@@ -1,4 +1,4 @@
-module github.com/upbound/upjet-provider-template
+module github.com/nuodb/provider-nuodbaas
 
 go 1.21
 

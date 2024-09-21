@@ -13,7 +13,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "template.upbound.io"
+	Group   = "nuodbaas.nuodb.com"
 	Version = "v1alpha1"
 )
 
