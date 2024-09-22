@@ -25,7 +25,7 @@ const (
 	errTrackUsage           = "cannot track ProviderConfig usage"
 	errExtractCredentials   = "cannot extract credentials"
 	errUnmarshalCredentials = "cannot unmarshal nuodbaas credentials as JSON"
-	keyUrlBase              = "url_base"
+	keyURLBase              = "url_base"
 	keyUser                 = "user"
 	keyPassword             = "password"
 )
@@ -67,8 +67,8 @@ func TerraformSetupBuilder(version, providerSource, providerVersion string) terr
 
 		// Set credentials in Terraform provider configuration.
 		ps.Configuration = map[string]any{}
-		if v, ok := creds[keyUrlBase]; ok {
-			ps.Configuration[keyUrlBase] = v
+		if v, ok := creds[keyURLBase]; ok {
+			ps.Configuration[keyURLBase] = v
 		}
 		if v, ok := creds[keyUser]; ok {
 			ps.Configuration[keyUser] = v
