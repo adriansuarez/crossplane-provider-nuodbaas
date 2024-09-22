@@ -1,0 +1,17 @@
+apiVersion: database.nuodb.com/v1alpha1
+kind: Database
+metadata:
+  annotations:
+    meta.upbound.io/example-id: database/v1alpha1/database
+  labels:
+    testing.upbound.io/example-name: basic
+  name: basic
+spec:
+  forProvider:
+    dbaPasswordSecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
+    name: basic
+    organization: org
+    project: basic
