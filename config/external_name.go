@@ -9,7 +9,7 @@ import "github.com/crossplane/upjet/pkg/config"
 // ExternalNameConfigs contains all external name configurations for this
 // provider.
 var ExternalNameConfigs = map[string]config.ExternalName{
-	"nuodbaas_project" : config.TemplatedStringAsIdentifier("project", "{{ .parameters.organization }}/{{ .parameters.name }}"),
+	"nuodbaas_project":  config.TemplatedStringAsIdentifier("project", "{{ .parameters.organization }}/{{ .parameters.name }}"),
 	"nuodbaas_database": config.TemplatedStringAsIdentifier("database", "{{ .parameters.organization }}/{{ .parameters.project }}/{{ .parameters.name }}"),
 }
 

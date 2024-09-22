@@ -10,8 +10,8 @@ import (
 
 	ujconfig "github.com/crossplane/upjet/pkg/config"
 
-	"github.com/nuodb/provider-nuodbaas/config/project"
 	"github.com/nuodb/provider-nuodbaas/config/database"
+	"github.com/nuodb/provider-nuodbaas/config/project"
 )
 
 const (
