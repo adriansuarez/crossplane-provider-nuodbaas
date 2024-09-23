@@ -1,8 +1,8 @@
-apiVersion: project.nuodb.com/v1alpha1
+apiVersion: nuodbaas.nuodb.com/v1alpha1
 kind: Project
 metadata:
   annotations:
-    meta.upbound.io/example-id: project/v1alpha1/project
+    meta.upbound.io/example-id: nuodbaas/v1alpha1/project
   labels:
     testing.upbound.io/example-name: basic
   name: basic

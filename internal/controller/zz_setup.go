@@ -9,8 +9,8 @@ import (
 
 	"github.com/crossplane/upjet/pkg/controller"
 
-	database "github.com/nuodb/provider-nuodbaas/internal/controller/database/database"
-	project "github.com/nuodb/provider-nuodbaas/internal/controller/project/project"
+	database "github.com/nuodb/provider-nuodbaas/internal/controller/nuodbaas/database"
+	project "github.com/nuodb/provider-nuodbaas/internal/controller/nuodbaas/project"
 	providerconfig "github.com/nuodb/provider-nuodbaas/internal/controller/providerconfig"
 )
 

@@ -1,8 +1,8 @@
-apiVersion: database.nuodb.com/v1alpha1
+apiVersion: nuodbaas.nuodb.com/v1alpha1
 kind: Database
 metadata:
   annotations:
-    meta.upbound.io/example-id: database/v1alpha1/database
+    meta.upbound.io/example-id: nuodbaas/v1alpha1/database
   labels:
     testing.upbound.io/example-name: basic
   name: basic
